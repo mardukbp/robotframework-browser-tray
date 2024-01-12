@@ -1,6 +1,6 @@
 [project]
 name = "robotframework-browser-tray"
-version = "1.0.0"
+version = "1.1.0"
 description = "Tray icon to start the Chromium installed by Browser Library"
 authors = [
     {name = "Marduk Bolaños", email = "marduk.bolanos@imbus.de"},
