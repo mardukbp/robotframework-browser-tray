@@ -25,7 +25,9 @@ pip install robotframework-browser-tray
 
 2. Execute `browser-tray`
 
-3. Add these lines to the top of the .robot file with your tests:
+3. Click on the tray icon with the Chromium logo and select `Open Chromium`
+
+4. Add these lines to the top of the .robot file with your tests:
 
 ```robotframework
 Library       Browser               playwright_process_port=55555
