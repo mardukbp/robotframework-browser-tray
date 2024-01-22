@@ -89,13 +89,13 @@ class TrayIcon:
 
 def is_running(cmd: str) -> bool:
     process_list = subprocess.check_output(
-        ["TASKLIST", "/FI", f'imagename eq {cmd}'],
+        ["TASKLIST", "/V", "/FI", f'imagename eq {cmd}'],
         encoding="utf-8"
     ).splitlines()
     instances = [
         process 
         for process in process_list 
-        if process.startswith(cmd)
+        if process.startswith(cmd) and os.getlogin().lower() in process.lower()
     ]
     return len(instances) > 1
 
