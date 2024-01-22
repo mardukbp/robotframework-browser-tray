@@ -34,13 +34,13 @@ def get_chromium_dir(node_modules: Path):
 
 
 def start_playwright(index_js: Path, playwright_process_port: int) -> Popen:
-    return Popen(f"node {index_js} {playwright_process_port}")
+    return Popen(['node', index_js, str(playwright_process_port)])
 
 
 def start_chromium(chromium_dir: Path, remote_debugging_port: int, incognito: bool) -> Popen:
-    incognito_flag = "-incognito" if incognito else ""
+    incognito_flag = ["-incognito"] if incognito else []
     chrome_exe = chromium_dir / "chrome-win" / "chrome.exe"
-    return Popen(f"{chrome_exe} --remote-debugging-port={remote_debugging_port} --test-type {incognito_flag}")
+    return Popen([chrome_exe, f"--remote-debugging-port={remote_debugging_port}", "--test-type"] + incognito_flag)
 
 
 class TrayIcon:
