@@ -25,7 +25,27 @@ pip install robotframework-browser-tray
 
 2. Execute `browser-tray`
 
-3. Click on the tray icon with the Chromium logo and select `Open Chromium`
+**Hint**: In case your environment does not allow executing browser-tray, call the Python module directly:
+
+```bash
+python -m BrowserTray
+```
+
+3a. Click on the tray icon with the Chromium logo and select `Open Chromium`
+
+3b. If Microsoft Edge is installed on your machine:
+
+    1. Close all instances of Microsoft Edge
+
+    ```
+    taskkill /F /IM msedge.exe
+    ```
+
+    2. Start Microsoft Edge with `Windows + R`
+
+    ```powershell
+    msedge.exe --remote-debugging-port=1234
+    ```
 
 4. Add these lines to the top of the .robot file with your tests:
 
@@ -38,7 +58,7 @@ In order to use other ports execute:
 
 ```bash
 browser-tray --pw-port=XXXX --cdp-port=XXXX
-```
+``` 
 
 ## How it works
 
