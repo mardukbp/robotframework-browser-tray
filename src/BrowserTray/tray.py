@@ -89,9 +89,9 @@ class TrayIcon:
 
 def is_running(cmd: str) -> bool:
     process_list = subprocess.check_output(
-        ["TASKLIST", "/V", "/FI", f'imagename eq {cmd}'],
-        encoding="utf-8"
-    ).splitlines()
+        # Set the character page to 65001 = UTF-8
+        f'chcp 65001 | TASKLIST /FI "IMAGENAME eq {cmd}"', shell=True
+    ).decode('utf-8').splitlines()
     instances = [
         process 
         for process in process_list 

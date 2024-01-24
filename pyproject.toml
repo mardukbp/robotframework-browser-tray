@@ -13,8 +13,11 @@ requires-python = ">=3.8.2"
 readme = "README.md"
 license = {text = "Apache 2.0"}
 
+[tool.flit.module]
+name = "BrowserTray"
+
 [project.scripts]
-browser-tray = "robotframework_browser_tray.tray:run"
+browser-tray = "BrowserTray.tray:run"
 
 [build-system]
 requires = ["flit_core>=3.2,<4"]
