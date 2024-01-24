@@ -5,6 +5,8 @@ description = "Tray icon to start the Chromium installed by Browser Library"
 authors = [
     {name = "Marduk Bolaños", email = "marduk.bolanos@imbus.de"},
 ]
+urls = { homepage = "https://github.com/mardukbp/robotframework-browser-tray" }
+
 dependencies = [
     "pystray>=0.19.5",
     "robotframework-browser>=18.0.0",
