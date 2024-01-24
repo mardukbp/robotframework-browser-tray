@@ -35,17 +35,17 @@ python -m BrowserTray
 
 3b. If Microsoft Edge is installed on your machine:
 
-    1. Close all instances of Microsoft Edge
+1. Close all instances of Microsoft Edge
 
-    ```
-    taskkill /F /IM msedge.exe
-    ```
+```powershell
+taskkill /F /IM msedge.exe
+```
 
-    2. Start Microsoft Edge with `Windows + R`
+2. Start Microsoft Edge with `Windows + R`
 
-    ```powershell
-    msedge.exe --remote-debugging-port=1234
-    ```
+```powershell
+msedge.exe --remote-debugging-port=1234
+```
 
 4. Add these lines to the top of the .robot file with your tests:
 
