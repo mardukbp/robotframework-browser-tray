@@ -8,7 +8,7 @@ from robot import run_cli
 
 TEST_SUITE = b"""
 *** Settings ***
-Library    BrowserTray.BrowserRepl   jsextension=jsextension.js   repl=${True}
+Library    BrowserTray.Repl   jsextension=jsextension.js   repl=${True}
 
 *** Test Cases ***
 Robot Framework Debug REPL
@@ -55,9 +55,13 @@ def shell():
             if file_path.exists():
                 file_path.unlink()
 
+
 def run():
     try:
         http.client.HTTPConnection('127.0.0.1', 1234, timeout=1).connect()
         shell()
     except TimeoutError:
-        print("ibrowser needs a running Chromium, started using the tray icon")
+        print("ibrowser needs either:\n" +
+              "  - a running Chromium, started using the tray icon or\n" + 
+              "  - a running Microsoft Edge started as explained in the documentation: https://pypi.org/project/robotframework-browser-tray/"
+        )

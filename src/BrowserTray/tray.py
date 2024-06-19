@@ -6,6 +6,8 @@ import sys
 from os.path import realpath
 from pathlib import Path
 from subprocess import Popen
+from tkinter import messagebox
+
 from PIL import Image
 from pystray import Icon, Menu, MenuItem
 
@@ -14,6 +16,7 @@ _, site_packages = site.getsitepackages()
 browser_wrapper = Path(site_packages) / "Browser" / "wrapper"
 index_js = browser_wrapper / "index.js"
 node_modules = browser_wrapper / "node_modules"
+playwright_core = node_modules / "playwright-core"
 
 
 def find_chromium(path: Path) -> list[Path]:
@@ -24,8 +27,12 @@ def find_chromium(path: Path) -> list[Path]:
     ]
 
 
+def playwright_is_initialized():
+    return node_modules.is_dir() and playwright_core.is_dir()
+
+
 def get_chromium_dir(node_modules: Path):
-    local_browsers = node_modules / "playwright-core" / ".local-browsers"
+    local_browsers = playwright_core / ".local-browsers"
 
     if not (node_modules.is_dir() and local_browsers.is_dir() and find_chromium(local_browsers)):
        return None
@@ -37,16 +44,10 @@ def start_playwright(index_js: Path, playwright_process_port: int) -> Popen:
     return Popen(['node', index_js, str(playwright_process_port)])
 
 
-def start_chromium(chromium_dir: Path, remote_debugging_port: int, incognito: bool) -> Popen:
-    incognito_flag = ["-incognito"] if incognito else []
-    chrome_exe = chromium_dir / "chrome-win" / "chrome.exe"
-    return Popen([chrome_exe, f"--remote-debugging-port={remote_debugging_port}", "--test-type"] + incognito_flag)
-
 
 class TrayIcon:
-    def __init__(self, processes: list[Popen], chromium_dir: Path, remote_debugging_port: int):
+    def __init__(self, processes: list[Popen], remote_debugging_port: int):
         chromium_icon = Image.open(Path(realpath(__file__)).parent / "chromium.png")
-        self.chromium_dir = chromium_dir
         self.processes = processes
         self.remote_debugging_port = remote_debugging_port
         self.icon = Icon(
@@ -76,15 +77,24 @@ class TrayIcon:
         self.icon.stop()
 
     def open_chromium(self):
-        chromium = start_chromium(self.chromium_dir, self.remote_debugging_port, False)
-        self.processes.append(chromium)
+        self.start_chromium(self.remote_debugging_port, False)
 
     def open_chromium_incognito(self):
-        chromium = start_chromium(self.chromium_dir, self.remote_debugging_port, True)
-        self.processes.append(chromium)
+        self.start_chromium(self.remote_debugging_port, True)
 
     def run(self):
         self.icon.run()
+
+    def start_chromium(self, remote_debugging_port: int, incognito: bool):
+        chromium_dir = get_chromium_dir(node_modules)
+
+        if not chromium_dir:
+            messagebox.showerror("Error", "Chromium is not installed. Execute 'rfbrowser init chromium'.")
+        else:
+            incognito_flag = ["-incognito"] if incognito else []
+            chrome_exe = chromium_dir / "chrome-win" / "chrome.exe"
+            chromium = Popen([chrome_exe, f"--remote-debugging-port={remote_debugging_port}", "--test-type"] + incognito_flag)
+            self.processes.append(chromium)
 
 
 def is_running(cmd: str) -> bool:
@@ -125,12 +135,16 @@ def run():
         sys.exit(1)
 
     playwright_process_port, remote_debugging_port = get_ports()
-    chromium_dir = get_chromium_dir(node_modules)
 
-    if not chromium_dir:
-        raise Exception("Playwright has not been initialized. Execute 'rfbrowser init chromium'.")
+    if not playwright_is_initialized():
+        print(
+            "Playwright has not been initialized.\n" + 
+            "In order to use Chromium execute 'rfbrowser init chromium'.\n" + 
+            "If you want to use the Microsoft Edge installed on your system execute 'rfbrowser init --skip-browsers'"
+        )
+        sys.exit(1)
 
     playwright_process = start_playwright(index_js, playwright_process_port)
     processes = [playwright_process]
-    tray_icon = TrayIcon(processes, chromium_dir, remote_debugging_port)
+    tray_icon = TrayIcon(processes, remote_debugging_port)
     tray_icon.run()
