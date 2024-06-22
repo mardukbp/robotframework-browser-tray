@@ -52,19 +52,9 @@ To start it execute:
 ibrowser
 ```
 
-On start up it checks whether the Chromium installed by `rfbrowser init chromium` is present. It can also be used with Microsoft Edge. See the section below for instructions. 
+On start up it connects to a running Chromium (started using the tray icon) or Microsoft Edge (see below for instructions).
 
-In addition to the selectors supported by Browser Library, `ibrowser` adds the selector `role` for selecting elements using their ARIA role.
-
-The role of an element can be easily obtained from the Accessibility Tree. To open the tree follow these steps:
-
-1. Press F12 to open the DevTools
-2. Select the Elements tab
-3. In the right panel click on the Accessibility tab
-4. In the section "Accessibility Tree" check "Enable full-page accessibility tree"
-5. Click the button "Reload DevTools"
-6. In the left panel click on the person icon to toggle the Accessibility Tree view
-
+If you start a new browser while ibrowser is running, call the keyword "Connect" to connect ibrowser to it.
 
 ### Usage in a Robot Framework Test Suite
 

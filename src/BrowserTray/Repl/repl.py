@@ -8,7 +8,7 @@ from robot import run_cli
 
 TEST_SUITE = b"""
 *** Settings ***
-Library    BrowserTray.Repl   jsextension=jsextension.js   repl=${True}
+Library    BrowserTray.Repl   repl=${True}
 
 *** Test Cases ***
 Robot Framework Debug REPL
