@@ -113,7 +113,7 @@ def is_running(cmd: str) -> bool:
 def get_ports() -> tuple[int, int]:
     MAX_PORT = 2**16
     REMOTE_DEBUGGING_PORT = 1234
-    PLAYWRIGHT_PROCESS_PORT= 55555
+    PLAYWRIGHT_PROCESS_PORT= 4711
     
     arg_parser = argparse.ArgumentParser(add_help=True)
     arg_parser.add_argument("--pw-port", default=PLAYWRIGHT_PROCESS_PORT, type=int, help=f"Playwright process port (default: {PLAYWRIGHT_PROCESS_PORT})")

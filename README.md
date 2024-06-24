@@ -61,7 +61,7 @@ If you start a new browser while ibrowser is running, call the keyword "Connect"
 Add these lines to the Settings section of the .robot file:
 
 ```robotframework
-Library       Browser               playwright_process_port=55555
+Library       Browser               playwright_process_port=4711
 Test Setup    Connect To Browser    http://localhost:1234            chromium    use_cdp=True
 ```
 
@@ -91,7 +91,7 @@ If Microsoft Edge is installed on your machine:
 
 On start up `browser-tray` checks whether `rfbrowser init` has been executed.
 
-If this requirement is met the Playwright wrapper is started with `node site-packages/Browser/wrapper/index.js 55555`.
+If this requirement is met the Playwright wrapper is started with `node site-packages/Browser/wrapper/index.js 4711`.
 
 Selecting "Open Chromium" in the tray icon executes `site-packages/Browser/wrapper/node_modules/playwright-core/.local-browsers/chromium-XX/chrome-win/chrome.exe --remote-debugging-port=1234 --test-type`.
 
