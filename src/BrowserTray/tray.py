@@ -1,6 +1,8 @@
 import argparse
+import http.client
 import os
 import site
+import socket
 import subprocess
 import sys
 import time
@@ -161,5 +163,11 @@ def run():
         )
         sys.exit(1)
 
-    tray_icon = TrayIcon(playwright_process_port, remote_debugging_port)
-    tray_icon.run()
+    try:
+        http.client.HTTPConnection('127.0.0.1', playwright_process_port, timeout=1).connect()
+        print("The port 4711 is already in use. Either browser-tray is already running or another process is using the port.\n" + 
+              "To start the Playwright wrapper on another port execute `browser-tray --pw-port PORT`")
+        sys.exit(1)
+    except socket.timeout:
+        tray_icon = TrayIcon(playwright_process_port, remote_debugging_port)
+        tray_icon.run()
