@@ -6,6 +6,7 @@ import socket
 import subprocess
 import sys
 import time
+import tkinter as tk
 from os.path import realpath
 from pathlib import Path
 from subprocess import Popen
@@ -109,7 +110,9 @@ class TrayIcon:
         chromium_dir = get_chromium_dir(node_modules)
 
         if not chromium_dir:
-            messagebox.showerror("Error", "Chromium is not installed. Execute 'rfbrowser init chromium'.")
+            window = tk.Tk()
+            window.withdraw()
+            messagebox.showerror("Error", "Chromium is not installed. Execute 'rfbrowser init chromium'.", master=window)
         else:
             incognito_flag = ["-incognito"] if incognito else []
             chrome_exe = chromium_dir / "chrome-win" / "chrome.exe"
