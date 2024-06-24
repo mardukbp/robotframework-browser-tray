@@ -1,11 +1,56 @@
 import http.client
+import re
 import socket
 import sys
 import tempfile
-from pathlib import Path
 import time
+from functools import wraps
+from pathlib import Path
 
+import RobotDebug.styles
+from Browser.base.librarycomponent import LibraryComponent
 from robot import run_cli
+from robot.api import logger
+
+
+def escape_ansi(line):
+    ansi_escape = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]')
+    return ansi_escape.sub('', line)
+
+
+print_output = RobotDebug.styles.print_output
+
+@wraps(print_output)
+def wrap_print_output(head, message, style=RobotDebug.styles.NORMAL_STYLE):
+    print_output(head, escape_ansi(message), style)
+
+RobotDebug.styles.print_output = wrap_print_output
+
+
+presenter_mode = LibraryComponent.presenter_mode
+
+@wraps(presenter_mode)
+def wrap_presenter_mode(self, selector, strict):
+    selector = self.resolve_selector(selector)
+    if self.library.presenter_mode:
+        mode = self.get_presenter_mode
+        try:
+            self.library.scroll_to_element(selector)
+            self.library.highlight_elements(
+                selector,
+                duration=mode["duration"],
+                width=mode["width"],
+                style=mode["style"],
+                color=mode["color"],
+            )
+        except Exception as error:
+            # selector = self.library.record_selector(f'"{selector}" failure')
+            logger.debug(f"On presenter more supress {error}")
+        else:
+            time.sleep(mode["duration"].seconds)
+    return selector
+
+LibraryComponent.presenter_mode = wrap_presenter_mode
 
 
 TEST_SUITE = b"""
