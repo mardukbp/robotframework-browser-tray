@@ -3,11 +3,9 @@ import pytest
 from BrowserTray.tray import TrayIcon, PLAYWRIGHT_PROCESS_PORT, REMOTE_DEBUGGING_PORT
 from BrowserTray.Repl import repl
 
-from fixtures import rfbrowser_init
-
 
 @pytest.fixture(scope="function", autouse=True)
-def tray_icon(rfbrowser_init):
+def tray_icon():
     icon = TrayIcon(PLAYWRIGHT_PROCESS_PORT, REMOTE_DEBUGGING_PORT)
     yield icon
     icon.exit()
