@@ -9,7 +9,7 @@ from pathlib import Path
 
 import RobotDebug.styles
 from Browser.base.librarycomponent import LibraryComponent
-from robot import run_cli
+from robot.run import run_cli
 from robot.api import logger
 
 
