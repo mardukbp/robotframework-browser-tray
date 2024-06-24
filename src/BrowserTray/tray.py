@@ -3,13 +3,19 @@ import os
 import site
 import subprocess
 import sys
+import time
 from os.path import realpath
 from pathlib import Path
 from subprocess import Popen
 from tkinter import messagebox
+from typing import List, Tuple
 
 from PIL import Image
 from pystray import Icon, Menu, MenuItem
+
+
+REMOTE_DEBUGGING_PORT = 1234
+PLAYWRIGHT_PROCESS_PORT= 4711
 
 
 _, site_packages = site.getsitepackages()
@@ -19,7 +25,7 @@ node_modules = browser_wrapper / "node_modules"
 playwright_core = node_modules / "playwright-core"
 
 
-def find_chromium(path: Path) -> list[Path]:
+def find_chromium(path: Path) -> List[Path]:
     return [
         Path(file.path)
         for file in os.scandir(path)
@@ -40,15 +46,27 @@ def get_chromium_dir(node_modules: Path):
     return find_chromium(local_browsers)[0]
 
 
-def start_playwright(index_js: Path, playwright_process_port: int) -> Popen:
+def start_playwright(playwright_process_port: int) -> Popen:
     return Popen(['node', index_js, str(playwright_process_port)])
 
 
-
 class TrayIcon:
-    def __init__(self, processes: list[Popen], remote_debugging_port: int):
+    def __init__(self, playwright_process_port: int, remote_debugging_port: int, timeout=0):
         chromium_icon = Image.open(Path(realpath(__file__)).parent / "chromium.png")
-        self.processes = processes
+
+        playwright_process = start_playwright(playwright_process_port)
+        time.sleep(2)
+        return_code = playwright_process.poll()
+
+        if return_code:
+            sys.exit(return_code)
+
+        if timeout:
+            time.sleep(timeout)
+            playwright_process.kill()
+            sys.exit(0)
+
+        self.processes = [playwright_process]
         self.remote_debugging_port = remote_debugging_port
         self.icon = Icon(
         name='Browser Tray',
@@ -58,7 +76,7 @@ class TrayIcon:
                 'Open Chromium',
                 self.open_chromium,
                 default=True
-            ),        
+            ),
             MenuItem(
                 'Open Chromium Incognito',
                 self.open_chromium_incognito,
@@ -94,6 +112,7 @@ class TrayIcon:
             incognito_flag = ["-incognito"] if incognito else []
             chrome_exe = chromium_dir / "chrome-win" / "chrome.exe"
             chromium = Popen([chrome_exe, f"--remote-debugging-port={remote_debugging_port}", "--test-type"] + incognito_flag)
+            time.sleep(2)
             self.processes.append(chromium)
 
 
@@ -110,10 +129,8 @@ def is_running(cmd: str) -> bool:
     return len(instances) > 1
 
 
-def get_ports() -> tuple[int, int]:
+def get_ports() -> Tuple[int, int]:
     MAX_PORT = 2**16
-    REMOTE_DEBUGGING_PORT = 1234
-    PLAYWRIGHT_PROCESS_PORT= 4711
     
     arg_parser = argparse.ArgumentParser(add_help=True)
     arg_parser.add_argument("--pw-port", default=PLAYWRIGHT_PROCESS_PORT, type=int, help=f"Playwright process port (default: {PLAYWRIGHT_PROCESS_PORT})")
@@ -144,7 +161,5 @@ def run():
         )
         sys.exit(1)
 
-    playwright_process = start_playwright(index_js, playwright_process_port)
-    processes = [playwright_process]
-    tray_icon = TrayIcon(processes, remote_debugging_port)
+    tray_icon = TrayIcon(playwright_process_port, remote_debugging_port)
     tray_icon.run()

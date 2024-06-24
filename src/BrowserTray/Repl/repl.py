@@ -1,7 +1,9 @@
 import http
+import socket
 import sys
 import tempfile
 from pathlib import Path
+import time
 
 from robot import run_cli
 
@@ -56,12 +58,16 @@ def shell():
                 file_path.unlink()
 
 
-def run():
+def run(timeout=0):
     try:
         http.client.HTTPConnection('127.0.0.1', 1234, timeout=1).connect()
+        if timeout:
+            time.sleep(timeout)
+            sys.exit(0)
         shell()
-    except TimeoutError:
+    except socket.timeout:
         print("ibrowser needs either:\n" +
               "  - a running Chromium, started using the tray icon or\n" + 
               "  - a running Microsoft Edge started as explained in the documentation: https://pypi.org/project/robotframework-browser-tray/"
         )
+        sys.exit(1)

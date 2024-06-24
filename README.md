@@ -56,6 +56,8 @@ On start up it connects to a running Chromium (started using the tray icon) or M
 
 If you start a new browser while ibrowser is running, call the keyword "Connect" to connect ibrowser to it.
 
+To exit ibrowser press `Ctrl-D`.
+
 ### Usage in a Robot Framework Test Suite
 
 Add these lines to the Settings section of the .robot file:
