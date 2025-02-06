@@ -13,7 +13,7 @@ dependencies = [
     "robotframework-browser>=18.0.0",
     "robotframework-debug>=4.5.0",
 ]
-requires-python = ">=3.8.2"
+requires-python = ">=3.9.0"
 readme = "README.md"
 license = {text = "Apache 2.0"}
 
