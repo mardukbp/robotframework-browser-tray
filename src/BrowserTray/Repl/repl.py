@@ -6,11 +6,15 @@ import tempfile
 import time
 from functools import wraps
 from pathlib import Path
+from textwrap import dedent
 
+import psutil
 import RobotDebug.styles
 from Browser.base.librarycomponent import LibraryComponent
 from robot.run import run_cli
 from robot.api import logger
+
+from BrowserTray.tray import get_ports
 
 
 def escape_ansi(line):
@@ -53,17 +57,22 @@ def wrap_presenter_mode(self, selector, strict):
 LibraryComponent.presenter_mode = wrap_presenter_mode
 
 
-TEST_SUITE = b"""
-*** Settings ***
-Library    BrowserTray.Repl   repl=${True}
+def test_suite(playwright_process_port, remote_debugging_port):
+    return bytes(dedent(
+        f"""
+        *** Settings ***
+        Library    BrowserTray.Repl    {playwright_process_port}    {remote_debugging_port}    repl=${True}
 
-*** Test Cases ***
-Robot Framework Debug REPL
-    Debug
-"""
+        *** Test Cases ***
+        Robot Framework Debug REPL
+            Debug
+        """
+        ), 
+        encoding='utf-8'
+    )
 
 
-def shell():
+def shell(playwright_process_port, remote_debugging_port):
     """A standalone robotframework shell."""
 
     default_no_logs = [
@@ -83,7 +92,7 @@ def shell():
     with tempfile.NamedTemporaryFile(
         prefix="robot-debug-", suffix=".robot", delete=False
     ) as test_file:
-        test_file.write(TEST_SUITE)
+        test_file.write(test_suite(playwright_process_port, remote_debugging_port))
         test_file.flush()
 
         if len(sys.argv) > 1:
@@ -104,12 +113,25 @@ def shell():
 
 
 def run(timeout=0):
+    cmdline = [
+        proc.cmdline()
+        for proc in psutil.process_iter()
+        if proc.name() == 'browser-tray.exe'
+    ]
+
+    if not cmdline:
+        print("browser-tray must be running prior to executing ibrowser")
+        sys.exit(1)
+
+    _, *ports = cmdline[0]
+    playwright_process_port, remote_debugging_port = get_ports(ports)
+
     try:
-        http.client.HTTPConnection('127.0.0.1', 1234, timeout=1).connect()
+        http.client.HTTPConnection('127.0.0.1', remote_debugging_port, timeout=1).connect()
         if timeout:
             time.sleep(timeout)
             sys.exit(0)
-        shell()
+        shell(playwright_process_port, remote_debugging_port)
     except socket.timeout:
         print("ibrowser needs either:\n" +
               "  - a running Chromium, started using the tray icon or\n" + 

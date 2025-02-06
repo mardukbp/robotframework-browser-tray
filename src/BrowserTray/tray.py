@@ -134,13 +134,13 @@ def is_running(cmd: str) -> bool:
     return len(instances) > 1
 
 
-def get_ports() -> Tuple[int, int]:
+def get_ports(cmdline_args=None) -> Tuple[int, int]:
     MAX_PORT = 2**16
     
     arg_parser = argparse.ArgumentParser(add_help=True)
     arg_parser.add_argument("--pw-port", default=PLAYWRIGHT_PROCESS_PORT, type=int, help=f"Playwright process port (default: {PLAYWRIGHT_PROCESS_PORT})")
     arg_parser.add_argument("--cdp-port", default=REMOTE_DEBUGGING_PORT, type=int, help=f"Chromium debugging port (default: {REMOTE_DEBUGGING_PORT})")
-    args = arg_parser.parse_args()
+    args = arg_parser.parse_args(cmdline_args)
     playwright_process_port = args.pw_port
     remote_debugging_port = args.cdp_port
 
@@ -168,7 +168,7 @@ def run():
 
     try:
         http.client.HTTPConnection('127.0.0.1', playwright_process_port, timeout=1).connect()
-        print("The port 4711 is already in use. Either browser-tray is already running or another process is using the port.\n" + 
+        print(f"The port {playwright_process_port} is already in use. Either browser-tray is already running or another process is using the port.\n" + 
               "To start the Playwright wrapper on another port execute `browser-tray --pw-port PORT`")
         sys.exit(1)
     except socket.timeout:
