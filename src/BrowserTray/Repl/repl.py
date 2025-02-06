@@ -112,18 +112,22 @@ def shell(playwright_process_port, remote_debugging_port):
                 file_path.unlink()
 
 
-def run(timeout=0):
-    cmdline = [
-        proc.cmdline()
-        for proc in psutil.process_iter()
-        if proc.name() == 'browser-tray.exe'
-    ]
+def run(timeout=0, test=False):
+    ports = []
 
-    if not cmdline:
-        print("browser-tray must be running prior to executing ibrowser")
-        sys.exit(1)
+    if not test:
+        cmdline = [
+            proc.cmdline()
+            for proc in psutil.process_iter()
+            if proc.name() == 'browser-tray.exe'
+        ]
 
-    _, *ports = cmdline[0]
+        if not cmdline:
+            print("browser-tray must be running prior to executing ibrowser")
+            sys.exit(1)
+
+        _, *ports = cmdline[0]
+
     playwright_process_port, remote_debugging_port = get_ports(ports)
 
     try:

@@ -14,13 +14,13 @@ def tray_icon():
 def test_start_ibrowser_with_running_browser(tray_icon):
     with pytest.raises(SystemExit) as e:
         tray_icon.open_chromium()
-        repl.run(4)
+        repl.run(timeout=4, test=True)
 
     assert e.value.code is 0, f"ibrowser terminated with return code {e.value.code}"
 
 
 def test_start_ibrowser_with_no_running_browser(tray_icon):
     with pytest.raises(SystemExit) as e:
-        repl.run(4)
+        repl.run(timeout=4, test=True)
 
     assert e.value.code is 1, f"ibrowser terminated with return code {e.value.code}"
