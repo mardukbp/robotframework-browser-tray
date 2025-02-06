@@ -11,10 +11,10 @@ def test_start_browser_tray():
 
 
 def test_start_browser_tray_twice():
-    icon = TrayIcon(PLAYWRIGHT_PROCESS_PORT, REMOTE_DEBUGGING_PORT, 0)
+    icon = TrayIcon(PLAYWRIGHT_PROCESS_PORT, REMOTE_DEBUGGING_PORT, timeout=0)
 
     with pytest.raises(expected_exception=SystemExit) as e:
-        TrayIcon(PLAYWRIGHT_PROCESS_PORT, REMOTE_DEBUGGING_PORT, 4)
+        TrayIcon(PLAYWRIGHT_PROCESS_PORT, REMOTE_DEBUGGING_PORT, timeout=4)
 
     icon.exit()
     assert e.value.code is 1, f"browser-tray terminated with return code {e.value.code}"
