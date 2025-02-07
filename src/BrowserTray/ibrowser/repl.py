@@ -1,7 +1,6 @@
 import http.client
 import re
 import socket
-from subprocess import Popen
 import sys
 import tempfile
 import time
@@ -15,7 +14,6 @@ from robot.run import run_cli
 from robot.api import logger
 
 from BrowserTray import cmdline_args
-from BrowserTray import playwright
 
 
 def escape_ansi(line):
@@ -58,11 +56,11 @@ def wrap_presenter_mode(self, selector, strict):
 LibraryComponent.presenter_mode = wrap_presenter_mode
 
 
-def test_suite(playwright_process_port, remote_debugging_port):
+def test_suite(remote_debugging_port):
     return bytes(dedent(
         f"""
         *** Settings ***
-        Library    BrowserTray.BrowserRepl    {playwright_process_port}    {remote_debugging_port}    repl=${True}
+        Library    BrowserTray.BrowserRepl    {remote_debugging_port}    repl=${True}
 
         *** Test Cases ***
         Robot Framework Debug REPL
@@ -73,7 +71,7 @@ def test_suite(playwright_process_port, remote_debugging_port):
     )
 
 
-def irobot(testsuite: bytes, playwright_proc: Popen):
+def irobot(testsuite: bytes):
     """A standalone robotframework shell."""
 
     default_no_logs = [
@@ -117,18 +115,15 @@ def irobot(testsuite: bytes, playwright_proc: Popen):
             file_path = Path(test_file.name)
             if file_path.exists():
                 file_path.unlink()
-            
-            playwright_proc.terminate()
 
 
 def run():
-    playwright_process_port, remote_debugging_port = cmdline_args.get_ports()
+    remote_debugging_port = cmdline_args.get_remote_debugging_port()
 
     try:
         http.client.HTTPConnection('127.0.0.1', remote_debugging_port, timeout=1).connect()
 
-        playwright_proc = playwright.run(playwright_process_port)
-        irobot(test_suite(playwright_process_port, remote_debugging_port), playwright_proc)
+        irobot(test_suite(remote_debugging_port))
     except socket.timeout:
         print("ibrowser needs either:\n" +
               "  - a running Chromium, started using the tray icon or\n" + 

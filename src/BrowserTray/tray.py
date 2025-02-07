@@ -109,6 +109,6 @@ def is_running(cmd: str) -> bool:
 
 
 def run():
-    playwright_process_port, remote_debugging_port = cmdline_args.get_ports()
+    remote_debugging_port = cmdline_args.get_remote_debugging_port()
     tray_icon = TrayIcon(remote_debugging_port)
     tray_icon.run()
