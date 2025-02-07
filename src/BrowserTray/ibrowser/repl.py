@@ -1,6 +1,7 @@
 import http.client
 import re
 import socket
+from subprocess import Popen
 import sys
 import tempfile
 import time
@@ -8,13 +9,13 @@ from functools import wraps
 from pathlib import Path
 from textwrap import dedent
 
-import psutil
 import RobotDebug.styles
 from Browser.base.librarycomponent import LibraryComponent
 from robot.run import run_cli
 from robot.api import logger
 
-from BrowserTray.tray import get_ports
+from BrowserTray import cmdline_args
+from BrowserTray import playwright
 
 
 def escape_ansi(line):
@@ -61,7 +62,7 @@ def test_suite(playwright_process_port, remote_debugging_port):
     return bytes(dedent(
         f"""
         *** Settings ***
-        Library    BrowserTray.Repl    {playwright_process_port}    {remote_debugging_port}    repl=${True}
+        Library    BrowserTray.BrowserRepl    {playwright_process_port}    {remote_debugging_port}    repl=${True}
 
         *** Test Cases ***
         Robot Framework Debug REPL
@@ -72,7 +73,7 @@ def test_suite(playwright_process_port, remote_debugging_port):
     )
 
 
-def shell(playwright_process_port, remote_debugging_port):
+def irobot(testsuite: bytes, playwright_proc: Popen):
     """A standalone robotframework shell."""
 
     default_no_logs = [
@@ -92,15 +93,21 @@ def shell(playwright_process_port, remote_debugging_port):
     with tempfile.NamedTemporaryFile(
         prefix="robot-debug-", suffix=".robot", delete=False
     ) as test_file:
-        test_file.write(test_suite(playwright_process_port, remote_debugging_port))
+        test_file.write(testsuite)
         test_file.flush()
 
         if len(sys.argv) > 1:
-            args = sys.argv[1:] + [test_file.name]
+            sys.argv = [
+                arg 
+                for arg in sys.argv 
+                if not (arg.startswith('--pw-port') or arg.startswith('--cdp-port'))
+            ]
+            args = sys.argv[1:] + [*default_no_logs, test_file.name]
         else:
             args = [*default_no_logs, test_file.name]
 
         try:
+            
             sys.exit(run_cli(args))
         finally:
             test_file.close()
@@ -110,35 +117,22 @@ def shell(playwright_process_port, remote_debugging_port):
             file_path = Path(test_file.name)
             if file_path.exists():
                 file_path.unlink()
+            
+            playwright_proc.terminate()
 
 
-def run(timeout=0, test=False):
-    ports = []
-
-    if not test:
-        cmdline = [
-            proc.cmdline()
-            for proc in psutil.process_iter()
-            if proc.name() == 'browser-tray.exe'
-        ]
-
-        if not cmdline:
-            print("browser-tray must be running prior to executing ibrowser")
-            sys.exit(1)
-
-        _, *ports = cmdline[0]
-
-    playwright_process_port, remote_debugging_port = get_ports(ports)
+def run():
+    playwright_process_port, remote_debugging_port = cmdline_args.get_ports()
 
     try:
         http.client.HTTPConnection('127.0.0.1', remote_debugging_port, timeout=1).connect()
-        if timeout:
-            time.sleep(timeout)
-            sys.exit(0)
-        shell(playwright_process_port, remote_debugging_port)
+
+        playwright_proc = playwright.run(playwright_process_port)
+        irobot(test_suite(playwright_process_port, remote_debugging_port), playwright_proc)
     except socket.timeout:
         print("ibrowser needs either:\n" +
               "  - a running Chromium, started using the tray icon or\n" + 
-              "  - a running Microsoft Edge started as explained in the documentation: https://pypi.org/project/robotframework-browser-tray/"
+              "  - a running Microsoft Edge started as explained in the documentation: https://pypi.org/project/robotframework-browser-tray/\n" +
+              f"Default remote-debugging-port: {remote_debugging_port}"
         )
         sys.exit(1)

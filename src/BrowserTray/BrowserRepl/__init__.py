@@ -2,7 +2,7 @@ from RobotDebug.RobotDebug import RobotDebug
 from robot.libraries.BuiltIn import BuiltIn
 
 
-class Repl(RobotDebug):
+class BrowserRepl(RobotDebug):
     def __init__(self, playwright_process_port, remote_debugging_port, **kwargs):
         super().__init__(**kwargs)
         

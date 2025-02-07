@@ -39,7 +39,7 @@ python -m BrowserTray
 **Hint**: In case your environment does not allow executing ibrowser, call the Python module directly:
 
 ```bash
-python -m BrowserTray.Repl
+python -m BrowserTray.ibrowser
 ```
 
 ### ibrowser
@@ -91,7 +91,7 @@ If Microsoft Edge is installed on your machine:
 
 ## How it works
 
-On start up `browser-tray` checks whether `rfbrowser init` has been executed.
+On start up `ibrowser` checks whether `rfbrowser init` has been executed.
 
 If this requirement is met the Playwright wrapper is started with `node site-packages/Browser/wrapper/index.js 4711`.
 
