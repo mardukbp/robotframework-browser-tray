@@ -1,6 +1,6 @@
 [project]
 name = "robotframework-browser-tray"
-version = "1.8.0"
+version = "1.8.1"
 description = "Tray icon and REPL for trying out Browser Library keywords using Chromium or Edge"
 authors = [
     {name = "Marduk Bolaños", email = "marduk.bolanos@imbus.de"},
@@ -8,9 +8,9 @@ authors = [
 urls = { homepage = "https://github.com/mardukbp/robotframework-browser-tray" }
 
 dependencies = [
-    "pystray>=0.19.5",
-    "robotframework-browser>=18.0.0",
-    "robotframework-debug>=4.5.0",
+    "pystray~=0.19.5",
+    "robotframework-browser~=18.0",
+    "robotframework-debug~=4.5.0",
 ]
 requires-python = ">=3.9.0"
 readme = "README.md"
