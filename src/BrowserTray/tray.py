@@ -1,9 +1,9 @@
-import os
 import site
 import subprocess
 import sys
 import tkinter as tk
-from os.path import realpath
+from glob import iglob
+from os.path import join, realpath
 from pathlib import Path
 from subprocess import Popen
 from tkinter import messagebox
@@ -20,35 +20,31 @@ browser_wrapper = Path(site_packages).resolve() / "Browser" / "wrapper"
 index_js = browser_wrapper / "index.js"
 node_modules = browser_wrapper / "node_modules"
 playwright_core = node_modules / "playwright-core"
+local_browsers = playwright_core / ".local-browsers"
 
 
-def find_chromium(path: Path) -> List[Path]:
+def find_chrome_exe() -> List[Path]:
+    if not (node_modules.is_dir() and local_browsers.is_dir()):
+       return []
+
     return [
-        Path(file.path)
-        for file in os.scandir(path)
-        if file.is_dir() and file.name.startswith("chromium")
+        exe
+        for exe in iglob(join(local_browsers, "**/*.exe"), recursive=True)
+        if exe.endswith("chrome.exe")
     ]
 
 
-def get_chromium_dir(node_modules: Path):
-    local_browsers = playwright_core / ".local-browsers"
-
-    if not (node_modules.is_dir() and local_browsers.is_dir() and find_chromium(local_browsers)):
-       return None
-
-    return find_chromium(local_browsers)[0]
-
-
 def start_chromium(remote_debugging_port: int, incognito: bool):
-    chromium_dir = get_chromium_dir(node_modules)
+    chrome_exe_found = find_chrome_exe()
 
-    if not chromium_dir:
+    if not chrome_exe_found:
         window = tk.Tk()
         window.withdraw()
         messagebox.showerror("Error", "Chromium is not installed. Execute 'rfbrowser init chromium'.", master=window)
     else:
+        chrome_exe = chrome_exe_found[0]
+        print(f"Starting {chrome_exe}")
         incognito_flag = ["-incognito"] if incognito else []
-        chrome_exe = chromium_dir / "chrome-win" / "chrome.exe"
         Popen([chrome_exe, f"--remote-debugging-port={remote_debugging_port}", "--test-type"] + incognito_flag)
 
 
