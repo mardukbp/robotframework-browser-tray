@@ -1,6 +1,6 @@
 [project]
 name = "robotframework-browser-tray"
-version = "1.8.3"
+version = "1.8.4"
 description = "Tray icon and REPL for trying out Browser Library keywords using Chromium or Edge"
 authors = [
     {name = "Marduk Bolaños", email = "marduk.bolanos@imbus.de"},
