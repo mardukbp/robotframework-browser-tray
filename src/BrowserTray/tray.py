@@ -1,3 +1,4 @@
+import os
 import site
 import subprocess
 import sys
@@ -7,7 +8,7 @@ from os.path import join, realpath
 from pathlib import Path
 from subprocess import Popen
 from tkinter import messagebox
-from typing import List
+from typing import Optional
 
 from PIL import Image
 from pystray import Icon, Menu, MenuItem
@@ -20,29 +21,26 @@ browser_wrapper = Path(site_packages).resolve() / "Browser" / "wrapper"
 index_js = browser_wrapper / "index.js"
 node_modules = browser_wrapper / "node_modules"
 playwright_core = node_modules / "playwright-core"
-local_browsers = playwright_core / ".local-browsers"
+local_browsers = os.environ.get('PLAYWRIGHT_BROWSERS_PATH', str(playwright_core / ".local-browsers"))
 
 
-def find_chrome_exe() -> List[Path]:
-    if not (node_modules.is_dir() and local_browsers.is_dir()):
-       return []
+def find_chrome_exe() -> Optional[str]:
+    if not Path(local_browsers).is_dir():
+       return
 
-    return [
-        exe
-        for exe in iglob(join(local_browsers, "**/*.exe"), recursive=True)
-        if exe.endswith("chrome.exe")
-    ]
+    for exe in iglob(join(local_browsers, "**/*.exe"), recursive=True):
+        if exe.endswith("chrome.exe"):
+            return exe
 
 
 def start_chromium(remote_debugging_port: int, incognito: bool):
-    chrome_exe_found = find_chrome_exe()
+    chrome_exe = find_chrome_exe()
 
-    if not chrome_exe_found:
+    if not chrome_exe:
         window = tk.Tk()
         window.withdraw()
         messagebox.showerror("Error", "Chromium is not installed. Execute 'rfbrowser init chromium'.", master=window)
     else:
-        chrome_exe = chrome_exe_found[0]
         print(f"Starting {chrome_exe}")
         incognito_flag = ["-incognito"] if incognito else []
         Popen([chrome_exe, f"--remote-debugging-port={remote_debugging_port}", "--test-type"] + incognito_flag)
