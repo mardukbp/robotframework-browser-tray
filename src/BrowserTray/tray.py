@@ -83,34 +83,40 @@ class TrayIcon:
 
     def run(self):
         cmd = "browser-tray"
-        if is_running(cmd):
+        process_list = find_process(cmd)
+        if is_running(cmd, process_list):
             print(f"{cmd} is already running")
             sys.exit(1)
             
         self.icon.run()
 
 
-def get_process_list(processes_json: str) -> list[dict]:
+def find_process(process: str) -> list[dict]:
+    get_process_as_json = [
+        f'Get-Process -Name {process} -ErrorAction SilentlyContinue',
+        'Select-Object Name, Id, Path',
+        'ConvertTo-Json'
+    ]
+    processes_json = powershell(get_process_as_json) or '[]'
     processes = json.loads(processes_json)
-
-    if isinstance(processes, dict):
-        return [processes]
-
-    return processes
+    return [processes] if isinstance(processes, dict) else processes
 
 
-def is_running(cmd: str) -> bool:
-    processes_json = subprocess.check_output(
-        f'powershell -Command "Get-Process -Name {cmd} -ErrorAction SilentlyContinue | Select-Object Name, Id, Path | ConvertTo-Json"', 
-        shell=True
-    ).decode('utf-8', errors='ignore').strip()
-    process_list = get_process_list(processes_json or "[]")
+def is_running(program: str, process_list: list[dict]) -> bool:
     instances = [
         process 
         for process in process_list 
-        if process['Path'].endswith(f"Scripts\\{cmd}.exe")
+        if process['Path'].endswith(f"Scripts\\{program}.exe")
     ]
     return len(instances) > 1
+
+
+def powershell(commands: list[str]) -> str:
+	command = '|'.join(commands)
+	return subprocess.check_output(
+        f'powershell -Command "{command}"',
+        shell=True
+    ).decode('utf-8', errors='ignore').strip()
 
 
 def run():
