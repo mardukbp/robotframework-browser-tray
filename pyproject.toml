@@ -10,7 +10,7 @@ urls = { homepage = "https://github.com/mardukbp/robotframework-browser-tray" }
 dependencies = [
     "pystray~=0.19.5",
     "robotframework-browser>=18",
-    "robotframework-debug~=4.6.0",
+    "robotframework-debug",
 ]
 requires-python = ">=3.10.0"
 readme = "README.md"
