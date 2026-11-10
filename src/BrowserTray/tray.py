@@ -39,7 +39,7 @@ def start_chromium(remote_debugging_port: int, incognito: bool):
     if not chrome_exe:
         window = tk.Tk()
         window.withdraw()
-        messagebox.showerror("Error", "Chromium is not installed. Execute 'rfbrowser init chromium'.", master=window)
+        messagebox.showerror("Error", "Chromium is not installed. Execute 'rfbrowser init chromium'.", parent=window)
     else:
         print(f"Starting {chrome_exe}")
         incognito_flag = ["-incognito"] if incognito else []
