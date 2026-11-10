@@ -1,3 +1,4 @@
+import json
 import os
 import site
 import subprocess
@@ -81,7 +82,7 @@ class TrayIcon:
         start_chromium(self.remote_debugging_port, True)
 
     def run(self):
-        cmd = "browser-tray.exe"
+        cmd = "browser-tray"
         if is_running(cmd):
             print(f"{cmd} is already running")
             sys.exit(1)
@@ -89,15 +90,25 @@ class TrayIcon:
         self.icon.run()
 
 
+def get_process_list(processes_json: str) -> list[dict]:
+    processes = json.loads(processes_json)
+
+    if isinstance(processes, dict):
+        return [processes]
+
+    return processes
+
+
 def is_running(cmd: str) -> bool:
-    process_list = subprocess.check_output(
-        # Set the character page to 65001 = UTF-8
-        f'chcp 65001 | TASKLIST /FI "IMAGENAME eq {cmd}"', shell=True
-    ).decode('utf-8').splitlines()
+    processes_json = subprocess.check_output(
+        f'powershell -Command "Get-Process -Name {cmd} -ErrorAction SilentlyContinue | Select-Object Name, Id, Path | ConvertTo-Json"', 
+        shell=True
+    ).decode('utf-8', errors='ignore').strip()
+    process_list = get_process_list(processes_json or "[]")
     instances = [
         process 
         for process in process_list 
-        if process.startswith(cmd)
+        if process['Path'].endswith(f"Scripts\\{cmd}.exe")
     ]
     return len(instances) > 1
 
