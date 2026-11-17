@@ -113,10 +113,11 @@ def is_running(program: str, process_list: list[dict]) -> bool:
 
 def powershell(commands: list[str]) -> str:
 	command = '|'.join(commands)
-	return subprocess.check_output(
+	return subprocess.getoutput(
         f'powershell -Command "{command}"',
-        shell=True
-    ).decode('utf-8', errors='ignore').strip()
+        encoding='utf-8',
+        errors='ignore'
+    ).strip()
 
 
 def run():
